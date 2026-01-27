@@ -1,8 +1,8 @@
 package client
 
 import (
-	healthcheckv1 "go.admiral.io/admiral-go/proto/healthcheck/v1"
-	userv1 "go.admiral.io/admiral-go/proto/user/v1"
+	healthcheckv1 "go.admiral.io/sdk/proto/healthcheck/v1"
+	userv1 "go.admiral.io/sdk/proto/user/v1"
 )
 
 // AdmiralClient provides access to Admiral service clients.

@@ -5,7 +5,7 @@ Go client library for the Admiral API.
 ## Installation
 
 ```bash
-go get go.admiral.io/admiral-go
+go get go.admiral.io/sdk
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ import (
 	"context"
 	"log"
 
-	"go.admiral.io/admiral-go/client"
+	"go.admiral.io/sdk/client"
 )
 
 func main() {
@@ -43,8 +43,8 @@ func main() {
 
 | Service | Accessor | Import |
 |---------|----------|--------|
-| HealthcheckAPI | `Healthcheck()` | `go.admiral.io/admiral-go/proto/healthcheck/v1` |
-| UserAPI | `User()` | `go.admiral.io/admiral-go/proto/user/v1` |
+| HealthcheckAPI | `Healthcheck()` | `go.admiral.io/sdk/proto/healthcheck/v1` |
+| UserAPI | `User()` | `go.admiral.io/sdk/proto/user/v1` |
 
 ## Example
 
@@ -56,8 +56,8 @@ import (
 	"fmt"
 	"log"
 
-	"go.admiral.io/admiral-go/client"
-	healthcheckv1 "go.admiral.io/admiral-go/proto/healthcheck/v1"
+	"go.admiral.io/sdk/client"
+	healthcheckv1 "go.admiral.io/sdk/proto/healthcheck/v1"
 )
 
 func main() {
@@ -93,7 +93,7 @@ import (
 	"crypto/tls"
 	"time"
 
-	"go.admiral.io/admiral-go/client"
+	"go.admiral.io/sdk/client"
 )
 
 cfg := client.Config{

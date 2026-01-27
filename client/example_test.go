@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"go.admiral.io/admiral-go/client"
+	"go.admiral.io/sdk/client"
 )
 
 func ExampleNew() {

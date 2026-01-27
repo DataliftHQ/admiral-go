@@ -23,7 +23,7 @@ func TestClientUserAgent(t *testing.T) {
 	ua := ClientUserAgent()
 
 	// Should contain the module path
-	if !strings.Contains(ua, "go.admiral.io/admiral-go") {
+	if !strings.Contains(ua, "go.admiral.io/sdk") {
 		t.Errorf("ClientUserAgent() missing module path, got: %s", ua)
 	}
 
@@ -51,7 +51,7 @@ func TestClientUserAgent(t *testing.T) {
 
 func TestModulePath(t *testing.T) {
 	// Verify the module path constant is correctly templated
-	expected := "go.admiral.io/admiral-go"
+	expected := "go.admiral.io/sdk"
 	if modulePath != expected {
 		t.Errorf("modulePath = %q, want %q", modulePath, expected)
 	}

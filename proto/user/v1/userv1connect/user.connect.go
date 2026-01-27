@@ -8,7 +8,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	v1 "go.admiral.io/admiral-go/proto/user/v1"
+	v1 "go.admiral.io/sdk/proto/user/v1"
 	http "net/http"
 	strings "strings"
 )

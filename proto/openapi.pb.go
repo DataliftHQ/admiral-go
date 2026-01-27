@@ -25,9 +25,9 @@ var File_openapi_proto protoreflect.FileDescriptor
 
 const file_openapi_proto_rawDesc = "" +
 	"\n" +
-	"\ropenapi.proto\x12\x0eadmiral.api.v1\x1a$gnostic/openapi/v3/annotations.protoB\xcd\x01\xbaG#\x12!\n" +
+	"\ropenapi.proto\x12\x0eadmiral.api.v1\x1a$gnostic/openapi/v3/annotations.protoB\xc6\x01\xbaG#\x12!\n" +
 	"\vAdmiral API\x12\vAdmiral API2\x050.0.0\n" +
-	"\x12com.admiral.api.v1B\fOpenapiProtoP\x01Z)go.admiral.io/admiral-go/proto/v1;protov1\xa2\x02\x03AAX\xaa\x02\x0eAdmiral.Api.V1\xca\x02\x0eAdmiral\\Api\\V1\xe2\x02\x1aAdmiral\\Api\\V1\\GPBMetadata\xea\x02\x10Admiral::Api::V1b\x06proto3"
+	"\x12com.admiral.api.v1B\fOpenapiProtoP\x01Z\"go.admiral.io/sdk/proto/v1;protov1\xa2\x02\x03AAX\xaa\x02\x0eAdmiral.Api.V1\xca\x02\x0eAdmiral\\Api\\V1\xe2\x02\x1aAdmiral\\Api\\V1\\GPBMetadata\xea\x02\x10Admiral::Api::V1b\x06proto3"
 
 var file_openapi_proto_goTypes = []any{}
 var file_openapi_proto_depIdxs = []int32{

@@ -107,8 +107,8 @@ const file_healthcheck_v1_healthcheck_proto_rawDesc = "" +
 	"\x13HealthcheckResponse2\xa6\x01\n" +
 	"\x0eHealthcheckAPI\x12\x93\x01\n" +
 	"\vHealthcheck\x12..admiral.api.healthcheck.v1.HealthcheckRequest\x1a/.admiral.api.healthcheck.v1.HealthcheckResponse\"#\x82\xd3\xe4\x93\x02\x1dZ\n" +
-	"\x12\b/healthz\x12\x0f/v1/healthcheckB\xfa\x01\n" +
-	"\x1ecom.admiral.api.healthcheck.v1B\x10HealthcheckProtoP\x01Z;go.admiral.io/admiral-go/proto/healthcheck/v1;healthcheckv1\xa2\x02\x03AAH\xaa\x02\x1aAdmiral.Api.Healthcheck.V1\xca\x02\x1aAdmiral\\Api\\Healthcheck\\V1\xe2\x02&Admiral\\Api\\Healthcheck\\V1\\GPBMetadata\xea\x02\x1dAdmiral::Api::Healthcheck::V1b\x06proto3"
+	"\x12\b/healthz\x12\x0f/v1/healthcheckB\xf3\x01\n" +
+	"\x1ecom.admiral.api.healthcheck.v1B\x10HealthcheckProtoP\x01Z4go.admiral.io/sdk/proto/healthcheck/v1;healthcheckv1\xa2\x02\x03AAH\xaa\x02\x1aAdmiral.Api.Healthcheck.V1\xca\x02\x1aAdmiral\\Api\\Healthcheck\\V1\xe2\x02&Admiral\\Api\\Healthcheck\\V1\\GPBMetadata\xea\x02\x1dAdmiral::Api::Healthcheck::V1b\x06proto3"
 
 var (
 	file_healthcheck_v1_healthcheck_proto_rawDescOnce sync.Once

@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	healthcheckv1 "go.admiral.io/admiral-go/proto/healthcheck/v1"
-	userv1 "go.admiral.io/admiral-go/proto/user/v1"
+	healthcheckv1 "go.admiral.io/sdk/proto/healthcheck/v1"
+	userv1 "go.admiral.io/sdk/proto/user/v1"
 )
 
 // Compile-time check that Client implements AdmiralClient

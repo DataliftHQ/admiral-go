@@ -183,8 +183,8 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\v_avatar_url2q\n" +
 	"\aUserAPI\x12f\n" +
 	"\aGetUser\x12#.admiral.api.user.v1.GetUserRequest\x1a$.admiral.api.user.v1.GetUserResponse\"\x10\x82\xd3\xe4\x93\x02\n" +
-	"\x12\b/v1/userB\xc2\x01\n" +
-	"\x17com.admiral.api.user.v1B\tUserProtoP\x01Z-go.admiral.io/admiral-go/proto/user/v1;userv1\xa2\x02\x03AAU\xaa\x02\x13Admiral.Api.User.V1\xca\x02\x13Admiral\\Api\\User\\V1\xe2\x02\x1fAdmiral\\Api\\User\\V1\\GPBMetadata\xea\x02\x16Admiral::Api::User::V1b\x06proto3"
+	"\x12\b/v1/userB\xbb\x01\n" +
+	"\x17com.admiral.api.user.v1B\tUserProtoP\x01Z&go.admiral.io/sdk/proto/user/v1;userv1\xa2\x02\x03AAU\xaa\x02\x13Admiral.Api.User.V1\xca\x02\x13Admiral\\Api\\User\\V1\xe2\x02\x1fAdmiral\\Api\\User\\V1\\GPBMetadata\xea\x02\x16Admiral::Api::User::V1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const modulePath = "go.admiral.io/admiral-go"
+const modulePath = "go.admiral.io/sdk"
 
 // Version returns the module version (e.g., "v1.2.3" or "dev").
 // When used as a dependency, returns the version from go.sum.
