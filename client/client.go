@@ -8,7 +8,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	agentv1 "go.admiral.io/sdk/proto/agent/v1"
+	clusterv1 "go.admiral.io/sdk/proto/cluster/v1"
 	healthcheckv1 "go.admiral.io/sdk/proto/healthcheck/v1"
+	runnerv1 "go.admiral.io/sdk/proto/runner/v1"
+	serviceaccountv1 "go.admiral.io/sdk/proto/serviceaccount/v1"
 	userv1 "go.admiral.io/sdk/proto/user/v1"
 )
 
@@ -20,7 +24,11 @@ type Client struct {
 	conn      *grpc.ClientConn
 	logger    Logger
 	authToken string
+	agent agentv1.AgentAPIClient
+	cluster clusterv1.ClusterAPIClient
 	healthcheck healthcheckv1.HealthcheckAPIClient
+	runner runnerv1.RunnerAPIClient
+	serviceAccount serviceaccountv1.ServiceAccountAPIClient
 	user userv1.UserAPIClient
 }
 
@@ -61,14 +69,38 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 		conn:      conn,
 		logger:    cfg.Logger,
 		authToken: cfg.AuthToken,
+		agent: agentv1.NewAgentAPIClient(conn),
+		cluster: clusterv1.NewClusterAPIClient(conn),
 		healthcheck: healthcheckv1.NewHealthcheckAPIClient(conn),
+		runner: runnerv1.NewRunnerAPIClient(conn),
+		serviceAccount: serviceaccountv1.NewServiceAccountAPIClient(conn),
 		user: userv1.NewUserAPIClient(conn),
 	}, nil
+}
+
+// Agent returns the AgentAPI client.
+func (c *Client) Agent() agentv1.AgentAPIClient {
+	return c.agent
+}
+
+// Cluster returns the ClusterAPI client.
+func (c *Client) Cluster() clusterv1.ClusterAPIClient {
+	return c.cluster
 }
 
 // Healthcheck returns the HealthcheckAPI client.
 func (c *Client) Healthcheck() healthcheckv1.HealthcheckAPIClient {
 	return c.healthcheck
+}
+
+// Runner returns the RunnerAPI client.
+func (c *Client) Runner() runnerv1.RunnerAPIClient {
+	return c.runner
+}
+
+// ServiceAccount returns the ServiceAccountAPI client.
+func (c *Client) ServiceAccount() serviceaccountv1.ServiceAccountAPIClient {
+	return c.serviceAccount
 }
 
 // User returns the UserAPI client.

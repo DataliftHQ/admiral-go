@@ -34,7 +34,11 @@ func main() {
 	defer c.Close()
 
 	// Access services via accessors
+	// c.Agent().MethodName(ctx, req)
+	// c.Cluster().MethodName(ctx, req)
 	// c.Healthcheck().MethodName(ctx, req)
+	// c.Runner().MethodName(ctx, req)
+	// c.ServiceAccount().MethodName(ctx, req)
 	// c.User().MethodName(ctx, req)
 }
 ```
@@ -43,7 +47,11 @@ func main() {
 
 | Service | Accessor | Import |
 |---------|----------|--------|
+| AgentAPI | `Agent()` | `go.admiral.io/sdk/proto/agent/v1` |
+| ClusterAPI | `Cluster()` | `go.admiral.io/sdk/proto/cluster/v1` |
 | HealthcheckAPI | `Healthcheck()` | `go.admiral.io/sdk/proto/healthcheck/v1` |
+| RunnerAPI | `Runner()` | `go.admiral.io/sdk/proto/runner/v1` |
+| ServiceAccountAPI | `ServiceAccount()` | `go.admiral.io/sdk/proto/serviceaccount/v1` |
 | UserAPI | `User()` | `go.admiral.io/sdk/proto/user/v1` |
 
 ## Example
@@ -57,7 +65,7 @@ import (
 	"log"
 
 	"go.admiral.io/sdk/client"
-	healthcheckv1 "go.admiral.io/sdk/proto/healthcheck/v1"
+	agentv1 "go.admiral.io/sdk/proto/agent/v1"
 )
 
 func main() {
@@ -78,7 +86,7 @@ func main() {
 	}
 
 	// Call a service method
-	resp, err := c.Healthcheck().ListMethod(ctx, &healthcheckv1.ListMethodRequest{})
+	resp, err := c.Agent().ListMethod(ctx, &agentv1.ListMethodRequest{})
 	if err != nil {
 		log.Fatal("Request failed:", err)
 	}

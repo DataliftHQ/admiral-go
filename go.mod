@@ -5,6 +5,7 @@ go 1.25
 toolchain go1.25.5
 
 require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260209202127-80ab13bee0bf.1
 	connectrpc.com/connect v1.19.1
 	github.com/go-logr/logr v1.4.3
 	github.com/google/gnostic v0.7.1

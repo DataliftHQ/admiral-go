@@ -35,6 +35,18 @@ const (
 const (
 	// UserAPIGetUserProcedure is the fully-qualified name of the UserAPI's GetUser RPC.
 	UserAPIGetUserProcedure = "/admiral.api.user.v1.UserAPI/GetUser"
+	// UserAPICreatePersonalAccessTokenProcedure is the fully-qualified name of the UserAPI's
+	// CreatePersonalAccessToken RPC.
+	UserAPICreatePersonalAccessTokenProcedure = "/admiral.api.user.v1.UserAPI/CreatePersonalAccessToken"
+	// UserAPIListPersonalAccessTokensProcedure is the fully-qualified name of the UserAPI's
+	// ListPersonalAccessTokens RPC.
+	UserAPIListPersonalAccessTokensProcedure = "/admiral.api.user.v1.UserAPI/ListPersonalAccessTokens"
+	// UserAPIGetPersonalAccessTokenProcedure is the fully-qualified name of the UserAPI's
+	// GetPersonalAccessToken RPC.
+	UserAPIGetPersonalAccessTokenProcedure = "/admiral.api.user.v1.UserAPI/GetPersonalAccessToken"
+	// UserAPIRevokePersonalAccessTokenProcedure is the fully-qualified name of the UserAPI's
+	// RevokePersonalAccessToken RPC.
+	UserAPIRevokePersonalAccessTokenProcedure = "/admiral.api.user.v1.UserAPI/RevokePersonalAccessToken"
 )
 
 // UserAPIClient is a client for the admiral.api.user.v1.UserAPI service.
@@ -42,6 +54,27 @@ type UserAPIClient interface {
 	// GetUser retrieves the profile of the currently authenticated user.
 	// The user is identified by the authentication token provided in the request.
 	GetUser(context.Context, *connect.Request[v1.GetUserRequest]) (*connect.Response[v1.GetUserResponse], error)
+	// CreatePersonalAccessToken creates a new PAT for the authenticated user.
+	// The response includes the raw token secret, which is shown exactly once
+	// and cannot be retrieved again.
+	//
+	// Scope: `tokens:write`
+	CreatePersonalAccessToken(context.Context, *connect.Request[v1.CreatePersonalAccessTokenRequest]) (*connect.Response[v1.CreatePersonalAccessTokenResponse], error)
+	// ListPersonalAccessTokens returns a paginated list of the authenticated
+	// user's PATs. Token secrets are never included.
+	//
+	// Scope: `tokens:read`
+	ListPersonalAccessTokens(context.Context, *connect.Request[v1.ListPersonalAccessTokensRequest]) (*connect.Response[v1.ListPersonalAccessTokensResponse], error)
+	// GetPersonalAccessToken retrieves a single PAT by ID.
+	// Returns metadata only — the token secret is never included.
+	//
+	// Scope: `tokens:read`
+	GetPersonalAccessToken(context.Context, *connect.Request[v1.GetPersonalAccessTokenRequest]) (*connect.Response[v1.GetPersonalAccessTokenResponse], error)
+	// RevokePersonalAccessToken permanently revokes a PAT. The token becomes
+	// immediately unusable and cannot be restored.
+	//
+	// Scope: `tokens:write`
+	RevokePersonalAccessToken(context.Context, *connect.Request[v1.RevokePersonalAccessTokenRequest]) (*connect.Response[v1.RevokePersonalAccessTokenResponse], error)
 }
 
 // NewUserAPIClient constructs a client for the admiral.api.user.v1.UserAPI service. By default, it
@@ -61,12 +94,40 @@ func NewUserAPIClient(httpClient connect.HTTPClient, baseURL string, opts ...con
 			connect.WithSchema(userAPIMethods.ByName("GetUser")),
 			connect.WithClientOptions(opts...),
 		),
+		createPersonalAccessToken: connect.NewClient[v1.CreatePersonalAccessTokenRequest, v1.CreatePersonalAccessTokenResponse](
+			httpClient,
+			baseURL+UserAPICreatePersonalAccessTokenProcedure,
+			connect.WithSchema(userAPIMethods.ByName("CreatePersonalAccessToken")),
+			connect.WithClientOptions(opts...),
+		),
+		listPersonalAccessTokens: connect.NewClient[v1.ListPersonalAccessTokensRequest, v1.ListPersonalAccessTokensResponse](
+			httpClient,
+			baseURL+UserAPIListPersonalAccessTokensProcedure,
+			connect.WithSchema(userAPIMethods.ByName("ListPersonalAccessTokens")),
+			connect.WithClientOptions(opts...),
+		),
+		getPersonalAccessToken: connect.NewClient[v1.GetPersonalAccessTokenRequest, v1.GetPersonalAccessTokenResponse](
+			httpClient,
+			baseURL+UserAPIGetPersonalAccessTokenProcedure,
+			connect.WithSchema(userAPIMethods.ByName("GetPersonalAccessToken")),
+			connect.WithClientOptions(opts...),
+		),
+		revokePersonalAccessToken: connect.NewClient[v1.RevokePersonalAccessTokenRequest, v1.RevokePersonalAccessTokenResponse](
+			httpClient,
+			baseURL+UserAPIRevokePersonalAccessTokenProcedure,
+			connect.WithSchema(userAPIMethods.ByName("RevokePersonalAccessToken")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // userAPIClient implements UserAPIClient.
 type userAPIClient struct {
-	getUser *connect.Client[v1.GetUserRequest, v1.GetUserResponse]
+	getUser                   *connect.Client[v1.GetUserRequest, v1.GetUserResponse]
+	createPersonalAccessToken *connect.Client[v1.CreatePersonalAccessTokenRequest, v1.CreatePersonalAccessTokenResponse]
+	listPersonalAccessTokens  *connect.Client[v1.ListPersonalAccessTokensRequest, v1.ListPersonalAccessTokensResponse]
+	getPersonalAccessToken    *connect.Client[v1.GetPersonalAccessTokenRequest, v1.GetPersonalAccessTokenResponse]
+	revokePersonalAccessToken *connect.Client[v1.RevokePersonalAccessTokenRequest, v1.RevokePersonalAccessTokenResponse]
 }
 
 // GetUser calls admiral.api.user.v1.UserAPI.GetUser.
@@ -74,11 +135,52 @@ func (c *userAPIClient) GetUser(ctx context.Context, req *connect.Request[v1.Get
 	return c.getUser.CallUnary(ctx, req)
 }
 
+// CreatePersonalAccessToken calls admiral.api.user.v1.UserAPI.CreatePersonalAccessToken.
+func (c *userAPIClient) CreatePersonalAccessToken(ctx context.Context, req *connect.Request[v1.CreatePersonalAccessTokenRequest]) (*connect.Response[v1.CreatePersonalAccessTokenResponse], error) {
+	return c.createPersonalAccessToken.CallUnary(ctx, req)
+}
+
+// ListPersonalAccessTokens calls admiral.api.user.v1.UserAPI.ListPersonalAccessTokens.
+func (c *userAPIClient) ListPersonalAccessTokens(ctx context.Context, req *connect.Request[v1.ListPersonalAccessTokensRequest]) (*connect.Response[v1.ListPersonalAccessTokensResponse], error) {
+	return c.listPersonalAccessTokens.CallUnary(ctx, req)
+}
+
+// GetPersonalAccessToken calls admiral.api.user.v1.UserAPI.GetPersonalAccessToken.
+func (c *userAPIClient) GetPersonalAccessToken(ctx context.Context, req *connect.Request[v1.GetPersonalAccessTokenRequest]) (*connect.Response[v1.GetPersonalAccessTokenResponse], error) {
+	return c.getPersonalAccessToken.CallUnary(ctx, req)
+}
+
+// RevokePersonalAccessToken calls admiral.api.user.v1.UserAPI.RevokePersonalAccessToken.
+func (c *userAPIClient) RevokePersonalAccessToken(ctx context.Context, req *connect.Request[v1.RevokePersonalAccessTokenRequest]) (*connect.Response[v1.RevokePersonalAccessTokenResponse], error) {
+	return c.revokePersonalAccessToken.CallUnary(ctx, req)
+}
+
 // UserAPIHandler is an implementation of the admiral.api.user.v1.UserAPI service.
 type UserAPIHandler interface {
 	// GetUser retrieves the profile of the currently authenticated user.
 	// The user is identified by the authentication token provided in the request.
 	GetUser(context.Context, *connect.Request[v1.GetUserRequest]) (*connect.Response[v1.GetUserResponse], error)
+	// CreatePersonalAccessToken creates a new PAT for the authenticated user.
+	// The response includes the raw token secret, which is shown exactly once
+	// and cannot be retrieved again.
+	//
+	// Scope: `tokens:write`
+	CreatePersonalAccessToken(context.Context, *connect.Request[v1.CreatePersonalAccessTokenRequest]) (*connect.Response[v1.CreatePersonalAccessTokenResponse], error)
+	// ListPersonalAccessTokens returns a paginated list of the authenticated
+	// user's PATs. Token secrets are never included.
+	//
+	// Scope: `tokens:read`
+	ListPersonalAccessTokens(context.Context, *connect.Request[v1.ListPersonalAccessTokensRequest]) (*connect.Response[v1.ListPersonalAccessTokensResponse], error)
+	// GetPersonalAccessToken retrieves a single PAT by ID.
+	// Returns metadata only — the token secret is never included.
+	//
+	// Scope: `tokens:read`
+	GetPersonalAccessToken(context.Context, *connect.Request[v1.GetPersonalAccessTokenRequest]) (*connect.Response[v1.GetPersonalAccessTokenResponse], error)
+	// RevokePersonalAccessToken permanently revokes a PAT. The token becomes
+	// immediately unusable and cannot be restored.
+	//
+	// Scope: `tokens:write`
+	RevokePersonalAccessToken(context.Context, *connect.Request[v1.RevokePersonalAccessTokenRequest]) (*connect.Response[v1.RevokePersonalAccessTokenResponse], error)
 }
 
 // NewUserAPIHandler builds an HTTP handler from the service implementation. It returns the path on
@@ -94,10 +196,42 @@ func NewUserAPIHandler(svc UserAPIHandler, opts ...connect.HandlerOption) (strin
 		connect.WithSchema(userAPIMethods.ByName("GetUser")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userAPICreatePersonalAccessTokenHandler := connect.NewUnaryHandler(
+		UserAPICreatePersonalAccessTokenProcedure,
+		svc.CreatePersonalAccessToken,
+		connect.WithSchema(userAPIMethods.ByName("CreatePersonalAccessToken")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userAPIListPersonalAccessTokensHandler := connect.NewUnaryHandler(
+		UserAPIListPersonalAccessTokensProcedure,
+		svc.ListPersonalAccessTokens,
+		connect.WithSchema(userAPIMethods.ByName("ListPersonalAccessTokens")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userAPIGetPersonalAccessTokenHandler := connect.NewUnaryHandler(
+		UserAPIGetPersonalAccessTokenProcedure,
+		svc.GetPersonalAccessToken,
+		connect.WithSchema(userAPIMethods.ByName("GetPersonalAccessToken")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userAPIRevokePersonalAccessTokenHandler := connect.NewUnaryHandler(
+		UserAPIRevokePersonalAccessTokenProcedure,
+		svc.RevokePersonalAccessToken,
+		connect.WithSchema(userAPIMethods.ByName("RevokePersonalAccessToken")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/admiral.api.user.v1.UserAPI/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserAPIGetUserProcedure:
 			userAPIGetUserHandler.ServeHTTP(w, r)
+		case UserAPICreatePersonalAccessTokenProcedure:
+			userAPICreatePersonalAccessTokenHandler.ServeHTTP(w, r)
+		case UserAPIListPersonalAccessTokensProcedure:
+			userAPIListPersonalAccessTokensHandler.ServeHTTP(w, r)
+		case UserAPIGetPersonalAccessTokenProcedure:
+			userAPIGetPersonalAccessTokenHandler.ServeHTTP(w, r)
+		case UserAPIRevokePersonalAccessTokenProcedure:
+			userAPIRevokePersonalAccessTokenHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -109,4 +243,20 @@ type UnimplementedUserAPIHandler struct{}
 
 func (UnimplementedUserAPIHandler) GetUser(context.Context, *connect.Request[v1.GetUserRequest]) (*connect.Response[v1.GetUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("admiral.api.user.v1.UserAPI.GetUser is not implemented"))
+}
+
+func (UnimplementedUserAPIHandler) CreatePersonalAccessToken(context.Context, *connect.Request[v1.CreatePersonalAccessTokenRequest]) (*connect.Response[v1.CreatePersonalAccessTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("admiral.api.user.v1.UserAPI.CreatePersonalAccessToken is not implemented"))
+}
+
+func (UnimplementedUserAPIHandler) ListPersonalAccessTokens(context.Context, *connect.Request[v1.ListPersonalAccessTokensRequest]) (*connect.Response[v1.ListPersonalAccessTokensResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("admiral.api.user.v1.UserAPI.ListPersonalAccessTokens is not implemented"))
+}
+
+func (UnimplementedUserAPIHandler) GetPersonalAccessToken(context.Context, *connect.Request[v1.GetPersonalAccessTokenRequest]) (*connect.Response[v1.GetPersonalAccessTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("admiral.api.user.v1.UserAPI.GetPersonalAccessToken is not implemented"))
+}
+
+func (UnimplementedUserAPIHandler) RevokePersonalAccessToken(context.Context, *connect.Request[v1.RevokePersonalAccessTokenRequest]) (*connect.Response[v1.RevokePersonalAccessTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("admiral.api.user.v1.UserAPI.RevokePersonalAccessToken is not implemented"))
 }

@@ -19,18 +19,48 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserAPI_GetUser_FullMethodName = "/admiral.api.user.v1.UserAPI/GetUser"
+	UserAPI_GetUser_FullMethodName                   = "/admiral.api.user.v1.UserAPI/GetUser"
+	UserAPI_CreatePersonalAccessToken_FullMethodName = "/admiral.api.user.v1.UserAPI/CreatePersonalAccessToken"
+	UserAPI_ListPersonalAccessTokens_FullMethodName  = "/admiral.api.user.v1.UserAPI/ListPersonalAccessTokens"
+	UserAPI_GetPersonalAccessToken_FullMethodName    = "/admiral.api.user.v1.UserAPI/GetPersonalAccessToken"
+	UserAPI_RevokePersonalAccessToken_FullMethodName = "/admiral.api.user.v1.UserAPI/RevokePersonalAccessToken"
 )
 
 // UserAPIClient is the client API for UserAPI service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// UserAPI provides operations for retrieving user profile information.
+// UserAPI provides operations for the currently authenticated user, including
+// profile retrieval and Personal Access Token (PAT) management.
+//
+// PATs allow users to authenticate with the Admiral API from scripts, CI
+// pipelines, and other programmatic contexts. Each PAT has user-selected
+// scopes and an optional expiration.
 type UserAPIClient interface {
 	// GetUser retrieves the profile of the currently authenticated user.
 	// The user is identified by the authentication token provided in the request.
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
+	// CreatePersonalAccessToken creates a new PAT for the authenticated user.
+	// The response includes the raw token secret, which is shown exactly once
+	// and cannot be retrieved again.
+	//
+	// Scope: `tokens:write`
+	CreatePersonalAccessToken(ctx context.Context, in *CreatePersonalAccessTokenRequest, opts ...grpc.CallOption) (*CreatePersonalAccessTokenResponse, error)
+	// ListPersonalAccessTokens returns a paginated list of the authenticated
+	// user's PATs. Token secrets are never included.
+	//
+	// Scope: `tokens:read`
+	ListPersonalAccessTokens(ctx context.Context, in *ListPersonalAccessTokensRequest, opts ...grpc.CallOption) (*ListPersonalAccessTokensResponse, error)
+	// GetPersonalAccessToken retrieves a single PAT by ID.
+	// Returns metadata only — the token secret is never included.
+	//
+	// Scope: `tokens:read`
+	GetPersonalAccessToken(ctx context.Context, in *GetPersonalAccessTokenRequest, opts ...grpc.CallOption) (*GetPersonalAccessTokenResponse, error)
+	// RevokePersonalAccessToken permanently revokes a PAT. The token becomes
+	// immediately unusable and cannot be restored.
+	//
+	// Scope: `tokens:write`
+	RevokePersonalAccessToken(ctx context.Context, in *RevokePersonalAccessTokenRequest, opts ...grpc.CallOption) (*RevokePersonalAccessTokenResponse, error)
 }
 
 type userAPIClient struct {
@@ -51,15 +81,81 @@ func (c *userAPIClient) GetUser(ctx context.Context, in *GetUserRequest, opts ..
 	return out, nil
 }
 
+func (c *userAPIClient) CreatePersonalAccessToken(ctx context.Context, in *CreatePersonalAccessTokenRequest, opts ...grpc.CallOption) (*CreatePersonalAccessTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePersonalAccessTokenResponse)
+	err := c.cc.Invoke(ctx, UserAPI_CreatePersonalAccessToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userAPIClient) ListPersonalAccessTokens(ctx context.Context, in *ListPersonalAccessTokensRequest, opts ...grpc.CallOption) (*ListPersonalAccessTokensResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPersonalAccessTokensResponse)
+	err := c.cc.Invoke(ctx, UserAPI_ListPersonalAccessTokens_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userAPIClient) GetPersonalAccessToken(ctx context.Context, in *GetPersonalAccessTokenRequest, opts ...grpc.CallOption) (*GetPersonalAccessTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPersonalAccessTokenResponse)
+	err := c.cc.Invoke(ctx, UserAPI_GetPersonalAccessToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userAPIClient) RevokePersonalAccessToken(ctx context.Context, in *RevokePersonalAccessTokenRequest, opts ...grpc.CallOption) (*RevokePersonalAccessTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokePersonalAccessTokenResponse)
+	err := c.cc.Invoke(ctx, UserAPI_RevokePersonalAccessToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserAPIServer is the server API for UserAPI service.
 // All implementations should embed UnimplementedUserAPIServer
 // for forward compatibility.
 //
-// UserAPI provides operations for retrieving user profile information.
+// UserAPI provides operations for the currently authenticated user, including
+// profile retrieval and Personal Access Token (PAT) management.
+//
+// PATs allow users to authenticate with the Admiral API from scripts, CI
+// pipelines, and other programmatic contexts. Each PAT has user-selected
+// scopes and an optional expiration.
 type UserAPIServer interface {
 	// GetUser retrieves the profile of the currently authenticated user.
 	// The user is identified by the authentication token provided in the request.
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
+	// CreatePersonalAccessToken creates a new PAT for the authenticated user.
+	// The response includes the raw token secret, which is shown exactly once
+	// and cannot be retrieved again.
+	//
+	// Scope: `tokens:write`
+	CreatePersonalAccessToken(context.Context, *CreatePersonalAccessTokenRequest) (*CreatePersonalAccessTokenResponse, error)
+	// ListPersonalAccessTokens returns a paginated list of the authenticated
+	// user's PATs. Token secrets are never included.
+	//
+	// Scope: `tokens:read`
+	ListPersonalAccessTokens(context.Context, *ListPersonalAccessTokensRequest) (*ListPersonalAccessTokensResponse, error)
+	// GetPersonalAccessToken retrieves a single PAT by ID.
+	// Returns metadata only — the token secret is never included.
+	//
+	// Scope: `tokens:read`
+	GetPersonalAccessToken(context.Context, *GetPersonalAccessTokenRequest) (*GetPersonalAccessTokenResponse, error)
+	// RevokePersonalAccessToken permanently revokes a PAT. The token becomes
+	// immediately unusable and cannot be restored.
+	//
+	// Scope: `tokens:write`
+	RevokePersonalAccessToken(context.Context, *RevokePersonalAccessTokenRequest) (*RevokePersonalAccessTokenResponse, error)
 }
 
 // UnimplementedUserAPIServer should be embedded to have
@@ -71,6 +167,18 @@ type UnimplementedUserAPIServer struct{}
 
 func (UnimplementedUserAPIServer) GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUser not implemented")
+}
+func (UnimplementedUserAPIServer) CreatePersonalAccessToken(context.Context, *CreatePersonalAccessTokenRequest) (*CreatePersonalAccessTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePersonalAccessToken not implemented")
+}
+func (UnimplementedUserAPIServer) ListPersonalAccessTokens(context.Context, *ListPersonalAccessTokensRequest) (*ListPersonalAccessTokensResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPersonalAccessTokens not implemented")
+}
+func (UnimplementedUserAPIServer) GetPersonalAccessToken(context.Context, *GetPersonalAccessTokenRequest) (*GetPersonalAccessTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPersonalAccessToken not implemented")
+}
+func (UnimplementedUserAPIServer) RevokePersonalAccessToken(context.Context, *RevokePersonalAccessTokenRequest) (*RevokePersonalAccessTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokePersonalAccessToken not implemented")
 }
 func (UnimplementedUserAPIServer) testEmbeddedByValue() {}
 
@@ -110,6 +218,78 @@ func _UserAPI_GetUser_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserAPI_CreatePersonalAccessToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePersonalAccessTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserAPIServer).CreatePersonalAccessToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserAPI_CreatePersonalAccessToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserAPIServer).CreatePersonalAccessToken(ctx, req.(*CreatePersonalAccessTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserAPI_ListPersonalAccessTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPersonalAccessTokensRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserAPIServer).ListPersonalAccessTokens(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserAPI_ListPersonalAccessTokens_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserAPIServer).ListPersonalAccessTokens(ctx, req.(*ListPersonalAccessTokensRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserAPI_GetPersonalAccessToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPersonalAccessTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserAPIServer).GetPersonalAccessToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserAPI_GetPersonalAccessToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserAPIServer).GetPersonalAccessToken(ctx, req.(*GetPersonalAccessTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserAPI_RevokePersonalAccessToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokePersonalAccessTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserAPIServer).RevokePersonalAccessToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserAPI_RevokePersonalAccessToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserAPIServer).RevokePersonalAccessToken(ctx, req.(*RevokePersonalAccessTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserAPI_ServiceDesc is the grpc.ServiceDesc for UserAPI service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -120,6 +300,22 @@ var UserAPI_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUser",
 			Handler:    _UserAPI_GetUser_Handler,
+		},
+		{
+			MethodName: "CreatePersonalAccessToken",
+			Handler:    _UserAPI_CreatePersonalAccessToken_Handler,
+		},
+		{
+			MethodName: "ListPersonalAccessTokens",
+			Handler:    _UserAPI_ListPersonalAccessTokens_Handler,
+		},
+		{
+			MethodName: "GetPersonalAccessToken",
+			Handler:    _UserAPI_GetPersonalAccessToken_Handler,
+		},
+		{
+			MethodName: "RevokePersonalAccessToken",
+			Handler:    _UserAPI_RevokePersonalAccessToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

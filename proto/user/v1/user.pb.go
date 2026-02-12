@@ -7,9 +7,13 @@
 package userv1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	v1 "go.admiral.io/sdk/proto/accesstoken/v1"
+	_ "go.admiral.io/sdk/proto/authz/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -65,7 +69,7 @@ type GetUserResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Unique identifier for the user (UUID format).
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// The tenant/organization this user belongs to (UUID format).
+	// The tenant this user belongs to (UUID format).
 	TenantId string `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
 	// User's email address.
 	Email string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
@@ -160,11 +164,437 @@ func (x *GetUserResponse) GetAvatarUrl() string {
 	return ""
 }
 
+// CreatePersonalAccessTokenRequest contains the parameters for creating a new PAT.
+type CreatePersonalAccessTokenRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Human-readable name for the token (e.g., "postman-testing").
+	// Must be unique per user within the tenant.
+	DisplayName string `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	// The scopes to grant this token. Must be valid scopes allowed for PATs.
+	Scopes []string `protobuf:"bytes,2,rep,name=scopes,proto3" json:"scopes,omitempty"`
+	// Optional expiration time. If unset, the token does not expire.
+	// Tenant policies may enforce a maximum lifetime.
+	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePersonalAccessTokenRequest) Reset() {
+	*x = CreatePersonalAccessTokenRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePersonalAccessTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePersonalAccessTokenRequest) ProtoMessage() {}
+
+func (x *CreatePersonalAccessTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePersonalAccessTokenRequest.ProtoReflect.Descriptor instead.
+func (*CreatePersonalAccessTokenRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *CreatePersonalAccessTokenRequest) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
+}
+
+func (x *CreatePersonalAccessTokenRequest) GetScopes() []string {
+	if x != nil {
+		return x.Scopes
+	}
+	return nil
+}
+
+func (x *CreatePersonalAccessTokenRequest) GetExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return nil
+}
+
+// CreatePersonalAccessTokenResponse contains the newly created PAT.
+type CreatePersonalAccessTokenResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The created token metadata.
+	AccessToken *v1.AccessToken `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	// The raw token secret (e.g., "adm_pat_7kH3mNqR2xFb..."). This value is
+	// shown exactly once and cannot be retrieved again. Store it securely.
+	PlainTextToken string `protobuf:"bytes,2,opt,name=plain_text_token,json=plainTextToken,proto3" json:"plain_text_token,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CreatePersonalAccessTokenResponse) Reset() {
+	*x = CreatePersonalAccessTokenResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePersonalAccessTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePersonalAccessTokenResponse) ProtoMessage() {}
+
+func (x *CreatePersonalAccessTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePersonalAccessTokenResponse.ProtoReflect.Descriptor instead.
+func (*CreatePersonalAccessTokenResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *CreatePersonalAccessTokenResponse) GetAccessToken() *v1.AccessToken {
+	if x != nil {
+		return x.AccessToken
+	}
+	return nil
+}
+
+func (x *CreatePersonalAccessTokenResponse) GetPlainTextToken() string {
+	if x != nil {
+		return x.PlainTextToken
+	}
+	return ""
+}
+
+// ListPersonalAccessTokensRequest contains pagination and filter parameters.
+type ListPersonalAccessTokensRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Maximum number of tokens to return per page.
+	PageSize int32 `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// Opaque pagination token from a previous response.
+	PageToken string `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	// Filter expression using the PEG filter DSL
+	// (e.g., `status = "active"` or `display_name = "ci-*"`).
+	Filter        string `protobuf:"bytes,3,opt,name=filter,proto3" json:"filter,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPersonalAccessTokensRequest) Reset() {
+	*x = ListPersonalAccessTokensRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPersonalAccessTokensRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPersonalAccessTokensRequest) ProtoMessage() {}
+
+func (x *ListPersonalAccessTokensRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPersonalAccessTokensRequest.ProtoReflect.Descriptor instead.
+func (*ListPersonalAccessTokensRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ListPersonalAccessTokensRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListPersonalAccessTokensRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListPersonalAccessTokensRequest) GetFilter() string {
+	if x != nil {
+		return x.Filter
+	}
+	return ""
+}
+
+// ListPersonalAccessTokensResponse contains a page of PAT metadata.
+type ListPersonalAccessTokensResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The list of tokens. Token secrets are never included.
+	AccessTokens []*v1.AccessToken `protobuf:"bytes,1,rep,name=access_tokens,json=accessTokens,proto3" json:"access_tokens,omitempty"`
+	// Pagination token for the next page. Empty when there are no more results.
+	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPersonalAccessTokensResponse) Reset() {
+	*x = ListPersonalAccessTokensResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPersonalAccessTokensResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPersonalAccessTokensResponse) ProtoMessage() {}
+
+func (x *ListPersonalAccessTokensResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPersonalAccessTokensResponse.ProtoReflect.Descriptor instead.
+func (*ListPersonalAccessTokensResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ListPersonalAccessTokensResponse) GetAccessTokens() []*v1.AccessToken {
+	if x != nil {
+		return x.AccessTokens
+	}
+	return nil
+}
+
+func (x *ListPersonalAccessTokensResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+// GetPersonalAccessTokenRequest identifies a PAT to retrieve.
+type GetPersonalAccessTokenRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The unique identifier of the token (UUID).
+	TokenId       string `protobuf:"bytes,1,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPersonalAccessTokenRequest) Reset() {
+	*x = GetPersonalAccessTokenRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPersonalAccessTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPersonalAccessTokenRequest) ProtoMessage() {}
+
+func (x *GetPersonalAccessTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPersonalAccessTokenRequest.ProtoReflect.Descriptor instead.
+func (*GetPersonalAccessTokenRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetPersonalAccessTokenRequest) GetTokenId() string {
+	if x != nil {
+		return x.TokenId
+	}
+	return ""
+}
+
+// GetPersonalAccessTokenResponse contains the requested PAT metadata.
+type GetPersonalAccessTokenResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The token metadata. The token secret is never included.
+	AccessToken   *v1.AccessToken `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPersonalAccessTokenResponse) Reset() {
+	*x = GetPersonalAccessTokenResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPersonalAccessTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPersonalAccessTokenResponse) ProtoMessage() {}
+
+func (x *GetPersonalAccessTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPersonalAccessTokenResponse.ProtoReflect.Descriptor instead.
+func (*GetPersonalAccessTokenResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetPersonalAccessTokenResponse) GetAccessToken() *v1.AccessToken {
+	if x != nil {
+		return x.AccessToken
+	}
+	return nil
+}
+
+// RevokePersonalAccessTokenRequest identifies a PAT to revoke.
+type RevokePersonalAccessTokenRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The unique identifier of the token to revoke (UUID).
+	TokenId       string `protobuf:"bytes,1,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokePersonalAccessTokenRequest) Reset() {
+	*x = RevokePersonalAccessTokenRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokePersonalAccessTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokePersonalAccessTokenRequest) ProtoMessage() {}
+
+func (x *RevokePersonalAccessTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokePersonalAccessTokenRequest.ProtoReflect.Descriptor instead.
+func (*RevokePersonalAccessTokenRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *RevokePersonalAccessTokenRequest) GetTokenId() string {
+	if x != nil {
+		return x.TokenId
+	}
+	return ""
+}
+
+// RevokePersonalAccessTokenResponse contains the revoked PAT metadata.
+type RevokePersonalAccessTokenResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The token metadata with updated status.
+	AccessToken   *v1.AccessToken `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokePersonalAccessTokenResponse) Reset() {
+	*x = RevokePersonalAccessTokenResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokePersonalAccessTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokePersonalAccessTokenResponse) ProtoMessage() {}
+
+func (x *RevokePersonalAccessTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokePersonalAccessTokenResponse.ProtoReflect.Descriptor instead.
+func (*RevokePersonalAccessTokenResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *RevokePersonalAccessTokenResponse) GetAccessToken() *v1.AccessToken {
+	if x != nil {
+		return x.AccessToken
+	}
+	return nil
+}
+
 var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12user/v1/user.proto\x12\x13admiral.api.user.v1\x1a\x1cgoogle/api/annotations.proto\"\x10\n" +
+	"\x12user/v1/user.proto\x12\x13admiral.api.user.v1\x1a accesstoken/v1/accesstoken.proto\x1a\x1aauthz/v1/annotations.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x10\n" +
 	"\x0eGetUserRequest\"\xa9\x02\n" +
 	"\x0fGetUserResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
@@ -180,10 +610,43 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\r_display_nameB\r\n" +
 	"\v_given_nameB\x0e\n" +
 	"\f_family_nameB\r\n" +
-	"\v_avatar_url2q\n" +
-	"\aUserAPI\x12f\n" +
-	"\aGetUser\x12#.admiral.api.user.v1.GetUserRequest\x1a$.admiral.api.user.v1.GetUserResponse\"\x10\x82\xd3\xe4\x93\x02\n" +
-	"\x12\b/v1/userB\xbb\x01\n" +
+	"\v_avatar_url\"\xa4\x01\n" +
+	" CreatePersonalAccessTokenRequest\x12-\n" +
+	"\fdisplay_name\x18\x01 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\xff\x01R\vdisplayName\x12\x16\n" +
+	"\x06scopes\x18\x02 \x03(\tR\x06scopes\x129\n" +
+	"\n" +
+	"expires_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"\x99\x01\n" +
+	"!CreatePersonalAccessTokenResponse\x12J\n" +
+	"\faccess_token\x18\x01 \x01(\v2'.admiral.api.accesstoken.v1.AccessTokenR\vaccessToken\x12(\n" +
+	"\x10plain_text_token\x18\x02 \x01(\tR\x0eplainTextToken\"u\n" +
+	"\x1fListPersonalAccessTokensRequest\x12\x1b\n" +
+	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x12\x16\n" +
+	"\x06filter\x18\x03 \x01(\tR\x06filter\"\x98\x01\n" +
+	" ListPersonalAccessTokensResponse\x12L\n" +
+	"\raccess_tokens\x18\x01 \x03(\v2'.admiral.api.accesstoken.v1.AccessTokenR\faccessTokens\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"D\n" +
+	"\x1dGetPersonalAccessTokenRequest\x12#\n" +
+	"\btoken_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\atokenId\"l\n" +
+	"\x1eGetPersonalAccessTokenResponse\x12J\n" +
+	"\faccess_token\x18\x01 \x01(\v2'.admiral.api.accesstoken.v1.AccessTokenR\vaccessToken\"G\n" +
+	" RevokePersonalAccessTokenRequest\x12#\n" +
+	"\btoken_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\atokenId\"o\n" +
+	"!RevokePersonalAccessTokenResponse\x12J\n" +
+	"\faccess_token\x18\x01 \x01(\v2'.admiral.api.accesstoken.v1.AccessTokenR\vaccessToken2\xea\x06\n" +
+	"\aUserAPI\x12j\n" +
+	"\aGetUser\x12#.admiral.api.user.v1.GetUserRequest\x1a$.admiral.api.user.v1.GetUserResponse\"\x14\x82\xb5\x18\x00\x82\xd3\xe4\x93\x02\n" +
+	"\x12\b/v1/user\x12\xb8\x01\n" +
+	"\x19CreatePersonalAccessToken\x125.admiral.api.user.v1.CreatePersonalAccessTokenRequest\x1a6.admiral.api.user.v1.CreatePersonalAccessTokenResponse\",\x82\xb5\x18\x0e\n" +
+	"\ftokens:write\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/v1/user/tokens\x12\xb1\x01\n" +
+	"\x18ListPersonalAccessTokens\x124.admiral.api.user.v1.ListPersonalAccessTokensRequest\x1a5.admiral.api.user.v1.ListPersonalAccessTokensResponse\"(\x82\xb5\x18\r\n" +
+	"\vtokens:read\x82\xd3\xe4\x93\x02\x11\x12\x0f/v1/user/tokens\x12\xb6\x01\n" +
+	"\x16GetPersonalAccessToken\x122.admiral.api.user.v1.GetPersonalAccessTokenRequest\x1a3.admiral.api.user.v1.GetPersonalAccessTokenResponse\"3\x82\xb5\x18\r\n" +
+	"\vtokens:read\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/user/tokens/{token_id}\x12\xca\x01\n" +
+	"\x19RevokePersonalAccessToken\x125.admiral.api.user.v1.RevokePersonalAccessTokenRequest\x1a6.admiral.api.user.v1.RevokePersonalAccessTokenResponse\">\x82\xb5\x18\x0e\n" +
+	"\ftokens:write\x82\xd3\xe4\x93\x02&:\x01*\"!/v1/user/tokens/{token_id}/revokeB\xbb\x01\n" +
 	"\x17com.admiral.api.user.v1B\tUserProtoP\x01Z&go.admiral.io/sdk/proto/user/v1;userv1\xa2\x02\x03AAU\xaa\x02\x13Admiral.Api.User.V1\xca\x02\x13Admiral\\Api\\User\\V1\xe2\x02\x1fAdmiral\\Api\\User\\V1\\GPBMetadata\xea\x02\x16Admiral::Api::User::V1b\x06proto3"
 
 var (
@@ -198,19 +661,42 @@ func file_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_user_v1_user_proto_rawDescData
 }
 
-var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_user_v1_user_proto_goTypes = []any{
-	(*GetUserRequest)(nil),  // 0: admiral.api.user.v1.GetUserRequest
-	(*GetUserResponse)(nil), // 1: admiral.api.user.v1.GetUserResponse
+	(*GetUserRequest)(nil),                    // 0: admiral.api.user.v1.GetUserRequest
+	(*GetUserResponse)(nil),                   // 1: admiral.api.user.v1.GetUserResponse
+	(*CreatePersonalAccessTokenRequest)(nil),  // 2: admiral.api.user.v1.CreatePersonalAccessTokenRequest
+	(*CreatePersonalAccessTokenResponse)(nil), // 3: admiral.api.user.v1.CreatePersonalAccessTokenResponse
+	(*ListPersonalAccessTokensRequest)(nil),   // 4: admiral.api.user.v1.ListPersonalAccessTokensRequest
+	(*ListPersonalAccessTokensResponse)(nil),  // 5: admiral.api.user.v1.ListPersonalAccessTokensResponse
+	(*GetPersonalAccessTokenRequest)(nil),     // 6: admiral.api.user.v1.GetPersonalAccessTokenRequest
+	(*GetPersonalAccessTokenResponse)(nil),    // 7: admiral.api.user.v1.GetPersonalAccessTokenResponse
+	(*RevokePersonalAccessTokenRequest)(nil),  // 8: admiral.api.user.v1.RevokePersonalAccessTokenRequest
+	(*RevokePersonalAccessTokenResponse)(nil), // 9: admiral.api.user.v1.RevokePersonalAccessTokenResponse
+	(*timestamppb.Timestamp)(nil),             // 10: google.protobuf.Timestamp
+	(*v1.AccessToken)(nil),                    // 11: admiral.api.accesstoken.v1.AccessToken
 }
 var file_user_v1_user_proto_depIdxs = []int32{
-	0, // 0: admiral.api.user.v1.UserAPI.GetUser:input_type -> admiral.api.user.v1.GetUserRequest
-	1, // 1: admiral.api.user.v1.UserAPI.GetUser:output_type -> admiral.api.user.v1.GetUserResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	10, // 0: admiral.api.user.v1.CreatePersonalAccessTokenRequest.expires_at:type_name -> google.protobuf.Timestamp
+	11, // 1: admiral.api.user.v1.CreatePersonalAccessTokenResponse.access_token:type_name -> admiral.api.accesstoken.v1.AccessToken
+	11, // 2: admiral.api.user.v1.ListPersonalAccessTokensResponse.access_tokens:type_name -> admiral.api.accesstoken.v1.AccessToken
+	11, // 3: admiral.api.user.v1.GetPersonalAccessTokenResponse.access_token:type_name -> admiral.api.accesstoken.v1.AccessToken
+	11, // 4: admiral.api.user.v1.RevokePersonalAccessTokenResponse.access_token:type_name -> admiral.api.accesstoken.v1.AccessToken
+	0,  // 5: admiral.api.user.v1.UserAPI.GetUser:input_type -> admiral.api.user.v1.GetUserRequest
+	2,  // 6: admiral.api.user.v1.UserAPI.CreatePersonalAccessToken:input_type -> admiral.api.user.v1.CreatePersonalAccessTokenRequest
+	4,  // 7: admiral.api.user.v1.UserAPI.ListPersonalAccessTokens:input_type -> admiral.api.user.v1.ListPersonalAccessTokensRequest
+	6,  // 8: admiral.api.user.v1.UserAPI.GetPersonalAccessToken:input_type -> admiral.api.user.v1.GetPersonalAccessTokenRequest
+	8,  // 9: admiral.api.user.v1.UserAPI.RevokePersonalAccessToken:input_type -> admiral.api.user.v1.RevokePersonalAccessTokenRequest
+	1,  // 10: admiral.api.user.v1.UserAPI.GetUser:output_type -> admiral.api.user.v1.GetUserResponse
+	3,  // 11: admiral.api.user.v1.UserAPI.CreatePersonalAccessToken:output_type -> admiral.api.user.v1.CreatePersonalAccessTokenResponse
+	5,  // 12: admiral.api.user.v1.UserAPI.ListPersonalAccessTokens:output_type -> admiral.api.user.v1.ListPersonalAccessTokensResponse
+	7,  // 13: admiral.api.user.v1.UserAPI.GetPersonalAccessToken:output_type -> admiral.api.user.v1.GetPersonalAccessTokenResponse
+	9,  // 14: admiral.api.user.v1.UserAPI.RevokePersonalAccessToken:output_type -> admiral.api.user.v1.RevokePersonalAccessTokenResponse
+	10, // [10:15] is the sub-list for method output_type
+	5,  // [5:10] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_user_v1_user_proto_init() }
@@ -225,7 +711,7 @@ func file_user_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_v1_user_proto_rawDesc), len(file_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
