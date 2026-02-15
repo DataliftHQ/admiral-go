@@ -63,7 +63,7 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 		return nil, fmt.Errorf("failed to dial %s: %w", cfg.HostPort, err)
 	}
 
-	cfg.Logger.Info("connected to Admiral API", "host", cfg.HostPort)
+	cfg.Logger.Debugf("connected to Admiral API at %s", cfg.HostPort)
 
 	return &Client{
 		conn:      conn,
@@ -130,7 +130,7 @@ func (c *Client) Version() string {
 // Close closes the underlying gRPC connection.
 func (c *Client) Close() error {
 	if c.conn != nil {
-		c.logger.Debug("closing connection")
+		c.logger.Debugf("closing connection")
 		return c.conn.Close()
 	}
 	return nil

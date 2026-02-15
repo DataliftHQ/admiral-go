@@ -2,189 +2,125 @@ package client
 
 import (
 	"fmt"
-	"log"
+	"io"
 	"log/slog"
-
-	"github.com/go-logr/logr"
+	"sync"
+	"time"
 )
 
 // Logger is an interface for logging within the Admiral client.
-// It supports structured logging with levels.
+// The SDK is silent by default (NoOpLogger). Use NewStdLogger or
+// NewSlogLogger to enable output.
 type Logger interface {
-	// Debug logs a debug message with optional key-value pairs
-	Debug(msg string, keysAndValues ...interface{})
-	// Info logs an info message with optional key-value pairs
-	Info(msg string, keysAndValues ...interface{})
-	// Warn logs a warning message with optional key-value pairs
-	Warn(msg string, keysAndValues ...interface{})
-	// Error logs an error message with optional key-value pairs
-	Error(err error, msg string, keysAndValues ...interface{})
-	// WithValues returns a new Logger with additional key-value pairs
-	WithValues(keysAndValues ...interface{}) Logger
-	// WithName returns a new Logger with the specified name appended
-	WithName(name string) Logger
+	// Debugf logs a debug message with printf-style formatting.
+	Debugf(format string, args ...any)
+	// Infof logs an info message with printf-style formatting.
+	Infof(format string, args ...any)
+	// Warnf logs a warning message with printf-style formatting.
+	Warnf(format string, args ...any)
+	// Errorf logs an error message with printf-style formatting.
+	Errorf(format string, args ...any)
 }
 
-// LogrAdapter adapts a logr.Logger to the Logger interface
-type LogrAdapter struct {
-	logger logr.Logger
-}
+// Level represents a log severity level.
+type Level int
 
-// NewLogrAdapter creates a new LogrAdapter from a logr.Logger
-func NewLogrAdapter(logger logr.Logger) Logger {
-	return &LogrAdapter{logger: logger}
-}
+const (
+	// LevelDebug is the most verbose level.
+	LevelDebug Level = iota
+	// LevelInfo is the default level for StdLogger.
+	LevelInfo
+	// LevelWarn only logs warnings and errors.
+	LevelWarn
+	// LevelError only logs errors.
+	LevelError
+)
 
-func (l *LogrAdapter) Debug(msg string, keysAndValues ...interface{}) {
-	l.logger.V(1).Info(msg, keysAndValues...)
-}
-
-func (l *LogrAdapter) Info(msg string, keysAndValues ...interface{}) {
-	l.logger.Info(msg, keysAndValues...)
-}
-
-func (l *LogrAdapter) Warn(msg string, keysAndValues ...interface{}) {
-	l.logger.Info(msg, append([]interface{}{"level", "warning"}, keysAndValues...)...)
-}
-
-func (l *LogrAdapter) Error(err error, msg string, keysAndValues ...interface{}) {
-	l.logger.Error(err, msg, keysAndValues...)
-}
-
-func (l *LogrAdapter) WithValues(keysAndValues ...interface{}) Logger {
-	return &LogrAdapter{logger: l.logger.WithValues(keysAndValues...)}
-}
-
-func (l *LogrAdapter) WithName(name string) Logger {
-	return &LogrAdapter{logger: l.logger.WithName(name)}
-}
-
-// SlogAdapter adapts a *slog.Logger to the Logger interface
-type SlogAdapter struct {
-	logger *slog.Logger
-}
-
-// NewSlogAdapter creates a new SlogAdapter from a *slog.Logger
-func NewSlogAdapter(logger *slog.Logger) Logger {
-	return &SlogAdapter{logger: logger}
-}
-
-func (s *SlogAdapter) Debug(msg string, keysAndValues ...interface{}) {
-	s.logger.Debug(msg, keysAndValues...)
-}
-
-func (s *SlogAdapter) Info(msg string, keysAndValues ...interface{}) {
-	s.logger.Info(msg, keysAndValues...)
-}
-
-func (s *SlogAdapter) Warn(msg string, keysAndValues ...interface{}) {
-	s.logger.Warn(msg, keysAndValues...)
-}
-
-func (s *SlogAdapter) Error(err error, msg string, keysAndValues ...interface{}) {
-	if err != nil {
-		s.logger.Error(msg, append([]interface{}{"error", err}, keysAndValues...)...)
-	} else {
-		s.logger.Error(msg, keysAndValues...)
+// String returns the human-readable name of the level.
+func (l Level) String() string {
+	switch l {
+	case LevelDebug:
+		return "DEBUG"
+	case LevelInfo:
+		return "INFO"
+	case LevelWarn:
+		return "WARN"
+	case LevelError:
+		return "ERROR"
+	default:
+		return fmt.Sprintf("LEVEL(%d)", int(l))
 	}
 }
 
-func (s *SlogAdapter) WithValues(keysAndValues ...interface{}) Logger {
-	// Convert key-value pairs to slog attributes and then to any slice
-	var args []any
-	for i := 0; i < len(keysAndValues); i += 2 {
-		if i+1 < len(keysAndValues) {
-			args = append(args, keysAndValues[i], keysAndValues[i+1])
-		}
-	}
-	return &SlogAdapter{logger: s.logger.With(args...)}
-}
-
-func (s *SlogAdapter) WithName(name string) Logger {
-	return &SlogAdapter{logger: s.logger.With("component", name)}
-}
-
-// DefaultLogger is a simple logger that uses the standard library log package
-type DefaultLogger struct {
-	prefix string
-}
-
-// NewDefaultLogger creates a new DefaultLogger
-func NewDefaultLogger() Logger {
-	return &DefaultLogger{}
-}
-
-func (d *DefaultLogger) Debug(msg string, keysAndValues ...interface{}) {
-	// Debug is typically disabled in default logger
-	if debugEnabled() {
-		d.logf("DEBUG", msg, keysAndValues...)
-	}
-}
-
-func (d *DefaultLogger) Info(msg string, keysAndValues ...interface{}) {
-	d.logf("INFO", msg, keysAndValues...)
-}
-
-func (d *DefaultLogger) Warn(msg string, keysAndValues ...interface{}) {
-	d.logf("WARN", msg, keysAndValues...)
-}
-
-func (d *DefaultLogger) Error(err error, msg string, keysAndValues ...interface{}) {
-	if err != nil {
-		d.logf("ERROR", fmt.Sprintf("%s: %v", msg, err), keysAndValues...)
-	} else {
-		d.logf("ERROR", msg, keysAndValues...)
-	}
-}
-
-func (d *DefaultLogger) WithValues(keysAndValues ...interface{}) Logger {
-	// For simplicity, default logger doesn't maintain context
-	return d
-}
-
-func (d *DefaultLogger) WithName(name string) Logger {
-	return &DefaultLogger{prefix: name}
-}
-
-func (d *DefaultLogger) logf(level, msg string, keysAndValues ...interface{}) {
-	prefix := ""
-	if d.prefix != "" {
-		prefix = fmt.Sprintf("[%s] ", d.prefix)
-	}
-
-	if len(keysAndValues) > 0 {
-		// Format key-value pairs
-		var kvPairs []string
-		for i := 0; i < len(keysAndValues); i += 2 {
-			if i+1 < len(keysAndValues) {
-				kvPairs = append(kvPairs, fmt.Sprintf("%v=%v", keysAndValues[i], keysAndValues[i+1]))
-			}
-		}
-		log.Printf("%s[%s] %s %v", prefix, level, msg, kvPairs)
-	} else {
-		log.Printf("%s[%s] %s", prefix, level, msg)
-	}
-}
-
-// debugEnabled checks if debug logging should be enabled
-// This could be controlled by an environment variable
-func debugEnabled() bool {
-	// For now, disable debug in default logger
-	// Could check DEBUG env var or similar
-	return false
-}
-
-// NoOpLogger is a logger that discards all log messages
+// NoOpLogger is a logger that discards all log messages.
 type NoOpLogger struct{}
 
-// NewNoOpLogger creates a new NoOpLogger
+// NewNoOpLogger creates a new NoOpLogger.
 func NewNoOpLogger() Logger {
 	return &NoOpLogger{}
 }
 
-func (n *NoOpLogger) Debug(msg string, keysAndValues ...interface{})            {}
-func (n *NoOpLogger) Info(msg string, keysAndValues ...interface{})             {}
-func (n *NoOpLogger) Warn(msg string, keysAndValues ...interface{})             {}
-func (n *NoOpLogger) Error(err error, msg string, keysAndValues ...interface{}) {}
-func (n *NoOpLogger) WithValues(keysAndValues ...interface{}) Logger            { return n }
-func (n *NoOpLogger) WithName(name string) Logger                               { return n }
+func (n *NoOpLogger) Debugf(format string, args ...any) {}
+func (n *NoOpLogger) Infof(format string, args ...any)  {}
+func (n *NoOpLogger) Warnf(format string, args ...any)  {}
+func (n *NoOpLogger) Errorf(format string, args ...any) {}
+
+// StdLogger writes log messages to an io.Writer at a configurable level.
+type StdLogger struct {
+	mu    sync.Mutex
+	w     io.Writer
+	level Level
+}
+
+// NewStdLogger creates a logger that writes to w at the given minimum level.
+//
+//	logger := client.NewStdLogger(os.Stderr, client.LevelInfo)
+func NewStdLogger(w io.Writer, level Level) Logger {
+	return &StdLogger{w: w, level: level}
+}
+
+func (s *StdLogger) Debugf(format string, args ...any) { s.logf(LevelDebug, format, args...) }
+func (s *StdLogger) Infof(format string, args ...any)  { s.logf(LevelInfo, format, args...) }
+func (s *StdLogger) Warnf(format string, args ...any)  { s.logf(LevelWarn, format, args...) }
+func (s *StdLogger) Errorf(format string, args ...any) { s.logf(LevelError, format, args...) }
+
+func (s *StdLogger) logf(level Level, format string, args ...any) {
+	if level < s.level {
+		return
+	}
+	msg := fmt.Sprintf(format, args...)
+	ts := time.Now().Format(time.RFC3339)
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	_, _ = fmt.Fprintf(s.w, "%s [%s] %s\n", ts, level, msg)
+}
+
+// SlogAdapter adapts a *slog.Logger to the Logger interface.
+// Uses only the standard library — no external dependencies.
+//
+//	logger := client.NewSlogLogger(slog.Default())
+type SlogAdapter struct {
+	logger *slog.Logger
+}
+
+// NewSlogLogger creates a Logger backed by a *slog.Logger.
+func NewSlogLogger(logger *slog.Logger) Logger {
+	return &SlogAdapter{logger: logger}
+}
+
+func (s *SlogAdapter) Debugf(format string, args ...any) {
+	s.logger.Debug(fmt.Sprintf(format, args...))
+}
+
+func (s *SlogAdapter) Infof(format string, args ...any) {
+	s.logger.Info(fmt.Sprintf(format, args...))
+}
+
+func (s *SlogAdapter) Warnf(format string, args ...any) {
+	s.logger.Warn(fmt.Sprintf(format, args...))
+}
+
+func (s *SlogAdapter) Errorf(format string, args ...any) {
+	s.logger.Error(fmt.Sprintf(format, args...))
+}

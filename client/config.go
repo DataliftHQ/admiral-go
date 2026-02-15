@@ -12,11 +12,35 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
+// AuthScheme controls the Authorization header prefix.
+type AuthScheme int
+
+const (
+	// AuthSchemeBearer uses "Authorization: Bearer <token>" (default).
+	AuthSchemeBearer AuthScheme = iota
+	// AuthSchemeToken uses "Authorization: Token <token>".
+	AuthSchemeToken
+)
+
+// String returns the Authorization header prefix for the scheme.
+func (s AuthScheme) String() string {
+	switch s {
+	case AuthSchemeToken:
+		return "Token"
+	default:
+		return "Bearer"
+	}
+}
+
 type Config struct {
 	HostPort          string
 	AuthToken         string
+	AuthScheme        AuthScheme
 	ConnectionOptions ConnectionOptions
-	Logger            Logger
+	// Logger for the client. Silent by default (NoOpLogger).
+	// Use NewStdLogger(os.Stderr, LevelInfo) or NewSlogLogger(slog.Default())
+	// to enable log output.
+	Logger Logger
 }
 
 type ConnectionOptions struct {
@@ -32,7 +56,7 @@ type ConnectionOptions struct {
 
 func (c *Config) CheckAndSetDefaults() error {
 	if c.Logger == nil {
-		c.Logger = NewDefaultLogger()
+		c.Logger = NewNoOpLogger()
 	}
 
 	if c.HostPort == "" {
@@ -50,7 +74,7 @@ func (c *Config) CheckAndSetDefaults() error {
 		}
 	}
 	if c.ConnectionOptions.Insecure && c.ConnectionOptions.TLSConfig != nil {
-		c.Logger.Warn("TLSConfig is set but ignored because Insecure is true")
+		c.Logger.Warnf("TLSConfig is set but ignored because Insecure is true")
 		c.ConnectionOptions.TLSConfig = nil
 	}
 
@@ -76,6 +100,7 @@ func (c *Config) CheckAndSetDefaults() error {
 		c.ConnectionOptions.DialOptions,
 		grpc.WithPerRPCCredentials(tokenAuth{
 			token:               c.AuthToken,
+			scheme:              c.AuthScheme,
 			requireTransportSec: !c.ConnectionOptions.Insecure,
 		}),
 	)
@@ -94,12 +119,13 @@ func (c *Config) CheckAndSetDefaults() error {
 
 type tokenAuth struct {
 	token               string
+	scheme              AuthScheme
 	requireTransportSec bool
 }
 
 func (t tokenAuth) GetRequestMetadata(ctx context.Context, in ...string) (map[string]string, error) {
 	return map[string]string{
-		"Authorization": "Bearer " + t.token,
+		"Authorization": t.scheme.String() + " " + t.token,
 	}, nil
 }
 

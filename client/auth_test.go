@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -194,6 +195,51 @@ func TestJWTClaims_ExpiresIn(t *testing.T) {
 
 	if got := claimsNoExp.ExpiresIn(); got != 0 {
 		t.Errorf("JWTClaims.ExpiresIn() for no expiration = %v, want 0", got)
+	}
+}
+
+func TestTokenAuth_AuthScheme(t *testing.T) {
+	tests := []struct {
+		name   string
+		scheme AuthScheme
+		want   string
+	}{
+		{
+			name:   "bearer scheme (default zero value)",
+			scheme: AuthSchemeBearer,
+			want:   "Bearer my-token",
+		},
+		{
+			name:   "token scheme",
+			scheme: AuthSchemeToken,
+			want:   "Token my-token",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ta := tokenAuth{
+				token:  "my-token",
+				scheme: tt.scheme,
+			}
+			md, err := ta.GetRequestMetadata(context.Background())
+			if err != nil {
+				t.Fatalf("GetRequestMetadata() error = %v", err)
+			}
+			got := md["Authorization"]
+			if got != tt.want {
+				t.Errorf("Authorization = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAuthScheme_String(t *testing.T) {
+	if got := AuthSchemeBearer.String(); got != "Bearer" {
+		t.Errorf("AuthSchemeBearer.String() = %q, want %q", got, "Bearer")
+	}
+	if got := AuthSchemeToken.String(); got != "Token" {
+		t.Errorf("AuthSchemeToken.String() = %q, want %q", got, "Token")
 	}
 }
 
